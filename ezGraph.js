@@ -1,4 +1,5 @@
 class ezGraph {
+    
     constructor(canvas) {
         this.canvas = canvas;
 		
@@ -10,15 +11,16 @@ class ezGraph {
             gridlineColor: '#bababa', //Color of graph paper lines
             gridlineWidth: 1,
 			gridlineDash: [4, 4], //[0,0] for full line
-            font: '17px Courier',
+			axesLabels: true, 
+            font: '17px Arial',
             fontColor: 'black'
         };
 
         this.ctx = this.canvas.getContext('2d');
         this.canvas.height = this.config.height;
         this.canvas.width = this.config.width;
-
         this.ctx.translate(this.canvas.width / 2, this.canvas.height / 2);
+		
         this.clear();
     }
 
@@ -30,7 +32,6 @@ class ezGraph {
 
     //Draws points at (x,y)
     point(x, y, color = 'black', radius = 3) {
-	
         let p = this.coordinateToPixel(x, y);
         x = p.x;
         y = p.y;
@@ -41,20 +42,8 @@ class ezGraph {
         this.ctx.fill();
     }
 
-    getBoundingCoordinates() {
-
-        let startingX = -this.canvas.width / 2 + (this.canvas.width / 2 % this.config.unit);
-        let startingY = -this.canvas.height / 2 + (this.canvas.height / 2 % this.config.unit);
-
-        let x = -2 * startingX / this.config.unit / 2;
-        let y = -2 * startingY / this.config.unit / 2;
-
-        return { x: x, y: y };
-    }
-
     //Draws line form (x1, y1) to (x2, y2)
     line(x1, y1, x2, y2, color = 'black', width = 1) {
-
         let p = this.coordinateToPixel(x1, y1);
         x1 = p.x;
         y1 = p.y;
@@ -73,7 +62,6 @@ class ezGraph {
 
     //Draws a rectangle at (x,y) with a width of w and a height of h
     rect(x, y, w, h, color = 'black') {
-
         let p = this.coordinateToPixel(x, y);
         x = p.x;
         y = p.y;
@@ -81,14 +69,26 @@ class ezGraph {
         this.ctx.fillStyle = color;
         this.ctx.fillRect(x, y, w, h);
     }
+	
+	//Gets the furthest x and y coordinates that are drawn onto the canvas
+    getBoundingCoordinates() {
+        let startingX = -this.canvas.width / 2 + (this.canvas.width / 2 % this.config.unit);
+        let startingY = -this.canvas.height / 2 + (this.canvas.height / 2 % this.config.unit);
 
+        let x = -2 * startingX / this.config.unit / 2;
+        let y = -2 * startingY / this.config.unit / 2;
+
+        return { x: x, y: y };
+    }
+
+	//Draws the x and y axes
     drawAxes() {
         this.line(-this.canvas.width / 2, 0, this.canvas.width, 0, 'black', this.config.gridlineWidth);
         this.line(0, -this.canvas.height / 2, 0, this.canvas.height / 2, 'black', this.config.gridlineWidth);
     }
 
+	//Draws the grid of the graph
     drawGrid() {
-
         let numXLines = Math.floor(this.canvas.width / this.config.unit) + 1;
         let numYLines = Math.floor(this.canvas.height / this.config.unit) + 1;
 
@@ -121,12 +121,17 @@ class ezGraph {
         this.ctx.setLineDash([]);
     }
 
+	//Draws numbers onto the x and y axes
     drawGraphNumbers() {
+		if (!this.config.axesLabels)
+			return;
+		
         let bc = this.getBoundingCoordinates();
         let startX = bc.x;
         let startY = bc.y;
 
-        let intermission = this.config.unit <= 20 ? 3 : 1;
+		//Magic numbers
+        let intermission = this.config.unit < 20 ? 3 : 1;
 
         //For the love of god, fix the magic numbers
         for (let i = -startX; i < 2 * startX; i += intermission) {
@@ -150,8 +155,9 @@ class ezGraph {
 
     }
 
+	
+	//Draws given text onto the (x, y) location with an offset
     drawText(text, x, y, xPixelOffset, yPixelOffset) {
-
         let p = this.coordinateToPixel(x, y);
         x = p.x + xPixelOffset;
         y = p.y + yPixelOffset;
@@ -161,13 +167,19 @@ class ezGraph {
         this.ctx.fillText(text, x, y);
     }
 
+	//Turns a cartesian (x,y) coordinate to canvas pixel space
     coordinateToPixel(x, y) {
         let px = x * this.config.unit;
         let py = - y * this.config.unit;
         return { x: px, y: py };
     }
 
+	//Clears the graph completely and re-applies the config
     clear() {
+        this.canvas.height = this.config.height;
+        this.canvas.width = this.config.width;
+        this.ctx.translate(this.canvas.width / 2, this.canvas.height / 2);
+		
         this.ctx.clearRect(-this.canvas.width / 2, -this.canvas.height / 2, this.canvas.width, this.canvas.height);
         this.drawBackground();
         this.drawGrid();
