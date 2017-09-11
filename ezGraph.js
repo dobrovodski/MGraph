@@ -70,7 +70,7 @@ class ezGraph {
         this.ctx.fillRect(x, y, w, h);
     }
 	
-	//Gets the furthest x and y coordinates that are drawn onto the canvas
+    //Gets the furthest x and y coordinates that are drawn onto the canvas
     getBoundingCoordinates() {
         let startingX = -this.canvas.width / 2 + (this.canvas.width / 2 % this.config.unit);
         let startingY = -this.canvas.height / 2 + (this.canvas.height / 2 % this.config.unit);
@@ -81,13 +81,13 @@ class ezGraph {
         return { x: x, y: y };
     }
 
-	//Draws the x and y axes
+    //Draws the x and y axes
     drawAxes() {
         this.line(-this.canvas.width / 2, 0, this.canvas.width, 0, 'black', this.config.gridlineWidth);
         this.line(0, -this.canvas.height / 2, 0, this.canvas.height / 2, 'black', this.config.gridlineWidth);
     }
 
-	//Draws the grid of the graph
+    //Draws the grid of the graph
     drawGrid() {
         let numXLines = Math.floor(this.canvas.width / this.config.unit) + 1;
         let numYLines = Math.floor(this.canvas.height / this.config.unit) + 1;
@@ -121,10 +121,10 @@ class ezGraph {
         this.ctx.setLineDash([]);
     }
 
-	//Draws numbers onto the x and y axes
+    //Draws numbers onto the x and y axes
     drawGraphNumbers() {
-		if (!this.config.axesLabels)
-			return;
+        if (!this.config.axesLabels)
+            return;
 		
         let bc = this.getBoundingCoordinates();
         let startX = bc.x;
@@ -156,7 +156,7 @@ class ezGraph {
     }
 
 	
-	//Draws given text onto the (x, y) location with an offset
+    //Draws given text onto the (x, y) location with an offset
     drawText(text, x, y, xPixelOffset, yPixelOffset) {
         let p = this.coordinateToPixel(x, y);
         x = p.x + xPixelOffset;
@@ -167,14 +167,14 @@ class ezGraph {
         this.ctx.fillText(text, x, y);
     }
 
-	//Turns a cartesian (x,y) coordinate to canvas pixel space
+    //Turns a cartesian (x,y) coordinate to canvas pixel space
     coordinateToPixel(x, y) {
         let px = x * this.config.unit;
         let py = - y * this.config.unit;
         return { x: px, y: py };
     }
 
-	//Clears the graph completely and re-applies the config
+    //Clears the graph completely and re-applies the config
     clear() {
         this.canvas.height = this.config.height;
         this.canvas.width = this.config.width;
@@ -187,11 +187,11 @@ class ezGraph {
         this.drawGraphNumbers();
     }
 	
-	//Changes the default configuration of the graph
-	//Applied after calling the clear() method
-	setConfig(config) {
-		for (let [k, v] of Object.entries(config)) {
-			this.config[k] = v;
-		}
+    //Changes the default configuration of the graph
+    //Applied after calling the clear() method
+    setConfig(config) {
+        for (let [k, v] of Object.entries(config)) {
+            this.config[k] = v;
+        }
 	}
   }
