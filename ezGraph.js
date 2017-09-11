@@ -1,8 +1,8 @@
 class ezGraph {
-    
+
     constructor(canvas) {
         this.canvas = canvas;
-		
+
         this.config = {
             width: window.innerWidth, //Width of canvas
             height: window.innerHeight * 0.95, //Height of canvas
@@ -10,8 +10,8 @@ class ezGraph {
             bgColor: '#fffef9', //Background color
             gridlineColor: '#bababa', //Color of graph paper lines
             gridlineWidth: 1,
-			gridlineDash: [4, 4], //[0,0] for full line
-			axesLabels: true, 
+            gridlineDash: [4, 4], //[0,0] for full line
+            axesLabels: true,
             font: '17px Arial',
             fontColor: 'black'
         };
@@ -20,7 +20,7 @@ class ezGraph {
         this.canvas.height = this.config.height;
         this.canvas.width = this.config.width;
         this.ctx.translate(this.canvas.width / 2, this.canvas.height / 2);
-		
+
         this.clear();
     }
 
@@ -69,7 +69,7 @@ class ezGraph {
         this.ctx.fillStyle = color;
         this.ctx.fillRect(x, y, w, h);
     }
-	
+
     //Gets the furthest x and y coordinates that are drawn onto the canvas
     getBoundingCoordinates() {
         let startingX = -this.canvas.width / 2 + (this.canvas.width / 2 % this.config.unit);
@@ -125,12 +125,12 @@ class ezGraph {
     drawGraphNumbers() {
         if (!this.config.axesLabels)
             return;
-		
+
         let bc = this.getBoundingCoordinates();
         let startX = bc.x;
         let startY = bc.y;
 
-		//Magic numbers
+        //Magic numbers
         let intermission = this.config.unit < 20 ? 3 : 1;
 
         //For the love of god, fix the magic numbers
@@ -155,7 +155,7 @@ class ezGraph {
 
     }
 
-	
+
     //Draws given text onto the (x, y) location with an offset
     drawText(text, x, y, xPixelOffset, yPixelOffset) {
         let p = this.coordinateToPixel(x, y);
@@ -179,19 +179,19 @@ class ezGraph {
         this.canvas.height = this.config.height;
         this.canvas.width = this.config.width;
         this.ctx.translate(this.canvas.width / 2, this.canvas.height / 2);
-		
+
         this.ctx.clearRect(-this.canvas.width / 2, -this.canvas.height / 2, this.canvas.width, this.canvas.height);
         this.drawBackground();
         this.drawGrid();
         this.drawAxes();
         this.drawGraphNumbers();
     }
-	
+
     //Changes the default configuration of the graph
     //Applied after calling the clear() method
     setConfig(config) {
         for (let [k, v] of Object.entries(config)) {
             this.config[k] = v;
         }
-	}
-  }
+    }
+}
