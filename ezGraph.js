@@ -1,14 +1,15 @@
 class ezGraph {
     constructor(canvas) {
         this.canvas = canvas;
-
+		
         this.config = {
             width: window.innerWidth, //Width of canvas
             height: window.innerHeight * 0.95, //Height of canvas
             unit: 20, //Width of a single unit in pixels
-            bgcolor: '#fffef9', //Background color
+            bgColor: '#fffef9', //Background color
             gridlineColor: '#bababa', //Color of graph paper lines
             gridlineWidth: 1,
+			gridlineDash: [4, 4], //[0,0] for full line
             font: '17px Courier',
             fontColor: 'black'
         };
@@ -22,13 +23,14 @@ class ezGraph {
     }
 
     //Sets the background color
-    setBackground() {
-        this.ctx.fillStyle = this.config.bgcolor;
+    drawBackground(color) {
+        this.ctx.fillStyle = color || this.config.bgColor;
         this.ctx.fillRect(-this.canvas.width / 2, -this.canvas.height / 2, this.canvas.width, this.canvas.height);
     }
 
     //Draws points at (x,y)
     point(x, y, color = 'black', radius = 3) {
+	
         let p = this.coordinateToPixel(x, y);
         x = p.x;
         y = p.y;
@@ -95,7 +97,7 @@ class ezGraph {
         let startingY = -bounding.y;
 
         //Dashed graph lines
-        this.ctx.setLineDash([4, 4]);
+        this.ctx.setLineDash(this.config.gridlineDash);
 
         for (let i = 0; i < numXLines; i++) {
 
@@ -159,7 +161,6 @@ class ezGraph {
         this.ctx.fillText(text, x, y);
     }
 
-
     coordinateToPixel(x, y) {
         let px = x * this.config.unit;
         let py = - y * this.config.unit;
@@ -168,10 +169,17 @@ class ezGraph {
 
     clear() {
         this.ctx.clearRect(-this.canvas.width / 2, -this.canvas.height / 2, this.canvas.width, this.canvas.height);
-        this.setBackground();
+        this.drawBackground();
         this.drawGrid();
         this.drawAxes();
         this.drawGraphNumbers();
     }
-
-}
+	
+	//Changes the default configuration of the graph
+	//Applied after calling the clear() method
+	setConfig(config) {
+		for (let [k, v] of Object.entries(config)) {
+			this.config[k] = v;
+		}
+	}
+  }
