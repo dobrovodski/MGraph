@@ -103,9 +103,9 @@ class MGraph {
 
     //Turns a pixel coordinate into a cartesian (x, y) coordinate
     pixelToCoordinate(px, py) {
-        let c = this.drawCanvas;
-        let x = (px - c.width / 2 + this.config.unit * this.config.originCoordinates.x) / this.config.unit;
-        let y = (py - c.height / 2 + this.config.unit * this.config.originCoordinates.y) / this.config.unit;
+        let cfg = this.config;
+        let x = (px - cfg.width / 2 + cfg.unit * cfg.originCoordinates.x) / cfg.unit;
+        let y = (py - cfg.height / 2 + cfg.unit * cfg.originCoordinates.y) / cfg.unit;
         return { x: x, y: y };
     }
 
@@ -120,7 +120,8 @@ class MGraph {
     drawBackground(color) {
         let ctx = this.gridCtx;
         let cfg = this.config;
-        ctx.fillStyle = color || this.config.bgColor;
+        ctx.fillStyle = color || cfg.bgColor;
+        this.clear(ctx);
         ctx.fillRect(-cfg.width / 2, -cfg.height / 2, cfg.width, cfg.height);
     }
 
@@ -135,6 +136,7 @@ class MGraph {
     //Draws the grid of the graph
     drawGrid() {
         let ctx = this.gridCtx;
+        let cfg = this.config;
 
         let bounding = this.getBoundingCoordinates();
         let startX = Math.floor(bounding.left);
@@ -142,14 +144,14 @@ class MGraph {
         let endX = Math.ceil(bounding.right);
         let endY = Math.ceil(bounding.up);
 
-        ctx.setLineDash(this.config.gridlineDash);
+        ctx.setLineDash(cfg.gridlineDash);
 
         for (let i = startX; i < endX; i++) {
             let x1 = i;
             let x2 = i;
             let y1 = startY;
             let y2 = endY;
-            this.line(x1, y1, x2, y2, this.config.gridlineWidth, this.config.gridlineColor, ctx);
+            this.line(x1, y1, x2, y2, cfg.gridlineWidth, cfg.gridlineColor, ctx);
         }
 
         for (let i = startY; i < endY; i++) {
@@ -157,7 +159,7 @@ class MGraph {
             let x2 = endX;
             let y1 = i;
             let y2 = i;
-            this.line(x1, y1, x2, y2, this.config.gridlineWidth, this.config.gridlineColor, ctx);
+            this.line(x1, y1, x2, y2, cfg.gridlineWidth, cfg.gridlineColor, ctx);
         }
 
         ctx.setLineDash([]);
@@ -209,12 +211,12 @@ class MGraph {
     }
 
     //Clears the graph completely and re-applies the config
-    clear(ctx) {
-        ctx.clearRect(-this.config.width / 2, -this.config.height / 2, this.config.width, this.config.height);
+    clear(ctx = this.drawCtx) {
+        let cfg = this.config;
+        ctx.clearRect(-cfg.width / 2, -cfg.height / 2, cfg.width, cfg.height);
     }
 
     drawGridLayer() {
-        this.clear(this.gridCtx);
         this.drawBackground();
         this.drawGrid();
         this.drawAxes();
