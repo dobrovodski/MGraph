@@ -46,8 +46,7 @@ class MGraph {
     }
 
     //Draws points at (x,y)
-    point(x, y, radius = 3, color = 'black') {
-        let ctx = this.drawCtx;
+    point(x, y, radius = 3, color = 'black', ctx = this.drawCtx) {
         let p = this.coordinateToPixel(x, y);
         x = p.x;
         y = p.y;
@@ -77,22 +76,22 @@ class MGraph {
     }
 
     //Draws a rectangle at (x,y) with a width of w and a height of h
-    rect(x, y, w, h, color = 'black') {
+    rect(x, y, w, h, color = 'black', ctx = this.drawCtx) {
         let p = this.coordinateToPixel(x, y);
         x = p.x;
         y = p.y;
 
-        this.ctx.fillStyle = color;
-        this.ctx.fillRect(x, y, w, h);
+        ctx.fillStyle = color;
+        ctx.fillRect(x, y, w, h);
     }
 
-    cross(x, y, size = 0.5, width = 1, color = 'red') {
+    cross(x, y, size = 0.5, width = 1, color = 'red', ctx = this.drawCtx) {
         let x1 = x - size / 2;
         let x2 = x + size / 2;
         let y1 = y - size / 2;
         let y2 = y + size / 2;
-        this.line(x1, y2, x2, y1, width, color);
-        this.line(x1, y1, x2, y2, width, color);
+        this.line(x1, y2, x2, y1, width, color, ctx);
+        this.line(x1, y1, x2, y2, width, color, ctx);
     }
 
     //Gets the furthest x and y coordinates that are drawn onto the canvas
@@ -120,9 +119,9 @@ class MGraph {
     //Sets the background color
     drawBackground(color) {
         let ctx = this.gridCtx;
-        let c = this.gridCanvas;
+        let cfg = this.config;
         ctx.fillStyle = color || this.config.bgColor;
-        ctx.fillRect(-c.width / 2, -c.height / 2, c.width, c.height);
+        ctx.fillRect(-cfg.width / 2, -cfg.height / 2, cfg.width, cfg.height);
     }
 
     //Draws the x and y axes
