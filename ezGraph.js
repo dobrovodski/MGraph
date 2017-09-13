@@ -4,16 +4,23 @@ class ezGraph {
         this.canvas = canvas;
 
         this.config = {
-            width: window.innerWidth, //Width of canvas
-            height: window.innerHeight * 0.95, //Height of canvas
+            width: window.innerWidth * 0.99, //Width of canvas
+            height: window.innerHeight * 0.98, //Height of canvas
+
+            originCoordinates: { x: 0, y: 0 }, //Defines which coordinates should be the center
             unit: 20, //Width of a single unit in pixels
-            bgColor: '#fffef9', //Background color
+
+            bgColor: '#FAFAFA', //Background color
             gridlineColor: '#bababa', //Color of graph paper lines
             gridlineWidth: 1,
-            gridlineDash: [4, 4], //[0,0] for full line
+            gridlineDash: [1, 4], //[0,0] for full line
+
+            axesColor: 'black',
             axesLabels: true,
-            font: '17px Arial',
-            fontColor: 'black'
+            axesWidth: 1,
+
+            font: '12px Arial',
+            fontColor: '#3F51B5'
         };
 
         this.ctx = this.canvas.getContext('2d');
@@ -24,14 +31,8 @@ class ezGraph {
         this.clear();
     }
 
-    //Sets the background color
-    drawBackground(color) {
-        this.ctx.fillStyle = color || this.config.bgColor;
-        this.ctx.fillRect(-this.canvas.width / 2, -this.canvas.height / 2, this.canvas.width, this.canvas.height);
-    }
-
     //Draws points at (x,y)
-    point(x, y, color = 'black', radius = 3) {
+    point(x, y, radius = 3, color = 'black') {
         let p = this.coordinateToPixel(x, y);
         x = p.x;
         y = p.y;
@@ -43,7 +44,7 @@ class ezGraph {
     }
 
     //Draws line form (x1, y1) to (x2, y2)
-    line(x1, y1, x2, y2, color = 'black', width = 1) {
+    line(x1, y1, x2, y2, width = 1, color = 'black') {
         let p = this.coordinateToPixel(x1, y1);
         x1 = p.x;
         y1 = p.y;
@@ -70,51 +71,74 @@ class ezGraph {
         this.ctx.fillRect(x, y, w, h);
     }
 
+    cross(x, y, size = 0.5, width = 1, color = 'red') {
+        let x1 = x - size / 2;
+        let x2 = x + size / 2;
+        let y1 = y - size / 2;
+        let y2 = y + size / 2;
+        this.line(x1, y2, x2, y1, width, color);
+        this.line(x1, y1, x2, y2, width, color);
+
+    }
+
     //Gets the furthest x and y coordinates that are drawn onto the canvas
     getBoundingCoordinates() {
-        let startingX = -this.canvas.width / 2 + (this.canvas.width / 2 % this.config.unit);
-        let startingY = -this.canvas.height / 2 + (this.canvas.height / 2 % this.config.unit);
+        let positiveCoords = this.pixelToCoordinate(this.canvas.width, this.canvas.height);
+        let negativeCoords = this.pixelToCoordinate(0, 0);
+        return { right: positiveCoords.x, up: positiveCoords.y, left: negativeCoords.x, down: negativeCoords.y };
+    }
 
-        let x = -2 * startingX / this.config.unit / 2;
-        let y = -2 * startingY / this.config.unit / 2;
-
+    //Turns a pixel coordinate into a cartesian (x, y) coordinate
+    pixelToCoordinate(px, py) {
+        let x = (px - this.canvas.width / 2 + this.config.unit * this.config.originCoordinates.x) / this.config.unit;
+        let y = (py - this.canvas.height / 2 + this.config.unit * this.config.originCoordinates.y) / this.config.unit;
         return { x: x, y: y };
+    }
+
+    //Turns a cartesian (x,y) coordinate to canvas pixel space
+    coordinateToPixel(x, y) {
+        let px = (x - this.config.originCoordinates.x) * this.config.unit;
+        let py = (- y + this.config.originCoordinates.y) * this.config.unit;
+        return { x: px, y: py };
+    }
+
+    //Sets the background color
+    drawBackground(color) {
+        this.ctx.fillStyle = color || this.config.bgColor;
+        this.ctx.fillRect(-this.canvas.width / 2, -this.canvas.height / 2, this.canvas.width, this.canvas.height);
     }
 
     //Draws the x and y axes
     drawAxes() {
-        this.line(-this.canvas.width / 2, 0, this.canvas.width, 0, 'black', this.config.gridlineWidth);
-        this.line(0, -this.canvas.height / 2, 0, this.canvas.height / 2, 'black', this.config.gridlineWidth);
+        let coords = this.getBoundingCoordinates();
+        console.log(coords);
+        this.line(coords.left, 0, coords.right, 0, this.config.axesColor, this.config.axesWidth);
+        this.line(0, coords.down, 0, coords.up, this.config.axesColor, this.config.axesWidth);
     }
 
     //Draws the grid of the graph
     drawGrid() {
-        let numXLines = Math.floor(this.canvas.width / this.config.unit) + 1;
-        let numYLines = Math.floor(this.canvas.height / this.config.unit) + 1;
-
         let bounding = this.getBoundingCoordinates();
-        let startingX = -bounding.x;
-        let startingY = -bounding.y;
+        let startX = Math.floor(bounding.left);
+        let startY = Math.floor(bounding.down);
+        let endX = Math.ceil(bounding.right);
+        let endY = Math.ceil(bounding.up);
 
-        //Dashed graph lines
         this.ctx.setLineDash(this.config.gridlineDash);
 
-        for (let i = 0; i < numXLines; i++) {
-
-            let x1 = startingX + i;
-            let x2 = x1;
-            let y1 = -this.canvas.height / 2;
-            let y2 = this.canvas.height / 2;
+        for (let i = startX; i < endX; i++) {
+            let x1 = i;
+            let x2 = i;
+            let y1 = startY;
+            let y2 = endY;
             this.line(x1, y1, x2, y2, this.config.gridlineColor, this.config.gridlineWidth);
-
         }
 
-        for (let i = 0; i < numYLines; i++) {
-
-            let x1 = -this.canvas.width / 2;
-            let x2 = this.canvas.width / 2;
-            let y1 = startingY + i;
-            let y2 = y1;
+        for (let i = startY; i < endY; i++) {
+            let x1 = startX;
+            let x2 = endX;
+            let y1 = i;
+            let y2 = i;
             this.line(x1, y1, x2, y2, this.config.gridlineColor, this.config.gridlineWidth);
         }
 
@@ -123,19 +147,17 @@ class ezGraph {
 
     //Draws numbers onto the x and y axes
     drawGraphNumbers() {
-        if (!this.config.axesLabels)
-            return;
-
         let bc = this.getBoundingCoordinates();
-        let startX = bc.x;
-        let startY = bc.y;
+        let startX = Math.floor(bc.left);
+        let startY = Math.floor(bc.down);
+        let endX = Math.ceil(bc.right);
+        let endY = Math.ceil(bc.up);
 
         //Magic numbers
-        let intermission = this.config.unit < 20 ? 3 : 1;
+        let intermission = this.config.unit <= 20 ? 3 : 1;
 
         //For the love of god, fix the magic numbers
-        for (let i = -startX; i < 2 * startX; i += intermission) {
-
+        for (let i = startX; i < endX; i += intermission) {
             if (i === 0)
                 continue;
             if (i < 0)
@@ -144,7 +166,7 @@ class ezGraph {
                 this.drawText(i, i, 0, 0, 15);
         }
 
-        for (let i = -startY; i < 2 * startY; i += intermission) {
+        for (let i = startY; i < endY; i += intermission) {
             if (i === 0)
                 continue;
             if (i < 0)
@@ -167,13 +189,6 @@ class ezGraph {
         this.ctx.fillText(text, x, y);
     }
 
-    //Turns a cartesian (x,y) coordinate to canvas pixel space
-    coordinateToPixel(x, y) {
-        let px = x * this.config.unit;
-        let py = - y * this.config.unit;
-        return { x: px, y: py };
-    }
-
     //Clears the graph completely and re-applies the config
     clear() {
         this.canvas.height = this.config.height;
@@ -184,7 +199,9 @@ class ezGraph {
         this.drawBackground();
         this.drawGrid();
         this.drawAxes();
-        this.drawGraphNumbers();
+        if (this.config.axesLabels) {
+            this.drawGraphNumbers();
+        }
     }
 
     //Changes the default configuration of the graph
