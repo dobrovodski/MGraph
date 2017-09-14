@@ -1,13 +1,8 @@
 class MGraph {
 
     constructor(htmlElement) {
-        this.drawCanvas = this.attachCanvas(htmlElement, 1);
-        this.drawCtx = this.drawCanvas.getContext('2d');
-        this.drawCtx.translate(this.drawCanvas.width / 2, this.drawCanvas.height / 2);
-
-        this.gridCanvas = this.attachCanvas(htmlElement, 0);
-        this.gridCtx = this.gridCanvas.getContext('2d');
-        this.gridCtx.translate(this.gridCanvas.width / 2, this.gridCanvas.height / 2);
+        [this.drawCanvas, this.drawCtx] = this.attachCanvas(htmlElement, 1);
+        [this.gridCanvas, this.gridCtx] = this.attachCanvas(htmlElement, 0);
 
         this.config = {
             width: htmlElement.getBoundingClientRect().width,
@@ -31,18 +26,6 @@ class MGraph {
         };
 
         this.drawGridLayer();
-    }
-
-    attachCanvas(el, zIndex) {
-        let c = document.createElement('canvas');
-        el.appendChild(c);
-
-        let dimensions = el.getBoundingClientRect();
-        c.style.cssText = 'position: absolute; left: 0; top:0; z-index:' + zIndex + ';';
-        c.height = dimensions.height;
-        c.width = dimensions.width;
-
-        return c;
     }
 
     //Draws points at (x,y)
@@ -85,6 +68,7 @@ class MGraph {
         ctx.fillRect(x, y, w, h);
     }
 
+    //Draws an X-shaped cross at (x,y) 
     cross(x, y, size = 0.5, width = 1, color = 'red', ctx = this.drawCtx) {
         let x1 = x - size / 2;
         let x2 = x + size / 2;
@@ -176,7 +160,7 @@ class MGraph {
         //Magic numbers
         let intermission = this.config.unit <= 20 ? 3 : 1;
 
-        //For the love of god, fix the magic numbers
+        //More magic numbers
         for (let i = startX; i < endX; i += intermission) {
             if (i === 0)
                 continue;
@@ -197,7 +181,6 @@ class MGraph {
 
     }
 
-
     //Draws given text onto the (x, y) location with an offset
     drawText(text, x, y, xPixelOffset, yPixelOffset) {
         let ctx = this.gridCtx;
@@ -210,12 +193,7 @@ class MGraph {
         ctx.fillText(text, x, y);
     }
 
-    //Clears the graph completely and re-applies the config
-    clear(ctx = this.drawCtx) {
-        let cfg = this.config;
-        ctx.clearRect(-cfg.width / 2, -cfg.height / 2, cfg.width, cfg.height);
-    }
-
+    //Draws the background, grid and labels
     drawGridLayer() {
         this.drawBackground();
         this.drawGrid();
@@ -225,11 +203,34 @@ class MGraph {
         }
     }
 
+    //Clears the given context
+    clear(ctx = this.drawCtx) {
+        let cfg = this.config;
+        ctx.clearRect(-cfg.width / 2, -cfg.height / 2, cfg.width, cfg.height);
+    }
+
+    //Attaches a canvas to the given HTML element at the given z-index
+    attachCanvas(el, zIndex) {
+        let canvas = document.createElement('canvas');
+        let ctx = canvas.getContext('2d');
+        el.appendChild(canvas);
+
+        let dimensions = el.getBoundingClientRect();
+        canvas.style.cssText = 'position: absolute; left: 0; top:0; z-index:' + zIndex + ';';
+        canvas.height = dimensions.height;
+        canvas.width = dimensions.width;
+
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+
+        return [canvas, ctx];
+    }
+
     //Changes the default configuration of the graph
-    //Applied after calling the clear() method
     setConfig(config) {
         for (let [k, v] of Object.entries(config)) {
             this.config[k] = v;
         }
+        //Apply any grid config changes
+        this.drawGridLayer();
     }
 }
