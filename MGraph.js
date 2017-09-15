@@ -22,14 +22,25 @@ class MGraph {
             axesWidth: 1,
 
             font: '12px Arial',
-            fontColor: '#3F51B5'
+            fontColor: '#3F51B5',
+
+            pointColor: '#000',
+            crossColor: '#000',
+            lineColor: '#000',
+            rectColor: '#000',
+
+            pointRadius: 3,
+            lineWidth: 1,
+            crossWidth: 1,
+            crossSize: 0.5
         };
 
         this.drawGridLayer();
     }
 
     //Draws points at (x,y)
-    point(x, y, radius = 3, color = 'black', ctx = this.drawCtx) {
+    point(x, y, radius = this.config.pointRadius,
+        color = this.config.pointColor, ctx = this.drawCtx) {
         let p = this.coordinateToPixel(x, y);
         x = p.x;
         y = p.y;
@@ -41,7 +52,8 @@ class MGraph {
     }
 
     //Draws line form (x1, y1) to (x2, y2)
-    line(x1, y1, x2, y2, width = 1, color = 'black', ctx = this.drawCtx) {
+    line(x1, y1, x2, y2, width = this.config.lineWidth,
+        color = this.config.lineColor, ctx = this.drawCtx) {
         let p = this.coordinateToPixel(x1, y1);
         x1 = p.x;
         y1 = p.y;
@@ -59,7 +71,7 @@ class MGraph {
     }
 
     //Draws a rectangle at (x,y) with a width of w and a height of h
-    rect(x, y, w, h, color = 'black', ctx = this.drawCtx) {
+    rect(x, y, w, h, color = this.config.rectColor, ctx = this.drawCtx) {
         let p = this.coordinateToPixel(x, y);
         x = p.x;
         y = p.y;
@@ -69,7 +81,8 @@ class MGraph {
     }
 
     //Draws an X-shaped cross at (x,y) 
-    cross(x, y, size = 0.5, width = 1, color = 'red', ctx = this.drawCtx) {
+    cross(x, y, size = this.config.crossSize, width = this.config.crossWidth,
+        color = this.config.crossColor, ctx = this.drawCtx) {
         let x1 = x - size / 2;
         let x2 = x + size / 2;
         let y1 = y - size / 2;
@@ -80,9 +93,13 @@ class MGraph {
 
     //Gets the furthest x and y coordinates that are drawn onto the canvas
     getBoundingCoordinates() {
-        let positiveCoords = this.pixelToCoordinate(this.config.width, this.config.height);
+        let cfg = this.config;
+        let positiveCoords = this.pixelToCoordinate(cfg.width, cfg.height);
         let negativeCoords = this.pixelToCoordinate(0, 0);
-        return { right: positiveCoords.x, up: positiveCoords.y, left: negativeCoords.x, down: negativeCoords.y };
+        return {
+            right: positiveCoords.x, up: positiveCoords.y,
+            left: negativeCoords.x, down: negativeCoords.y
+        };
     }
 
     //Turns a pixel coordinate into a cartesian (x, y) coordinate
@@ -113,8 +130,9 @@ class MGraph {
     drawAxes() {
         let ctx = this.gridCtx;
         let coords = this.getBoundingCoordinates();
-        this.line(coords.left, 0, coords.right, 0, this.config.axesWidth, this.config.axesColor, ctx);
-        this.line(0, coords.down, 0, coords.up, this.config.axesWidth, this.config.axesColor, ctx);
+        let cfg = this.config;
+        this.line(coords.left, 0, coords.right, 0, cfg.axesWidth, cfg.axesColor, ctx);
+        this.line(0, coords.down, 0, coords.up, cfg.axesWidth, cfg.axesColor, ctx);
     }
 
     //Draws the grid of the graph
@@ -157,10 +175,8 @@ class MGraph {
         let endX = Math.ceil(bc.right);
         let endY = Math.ceil(bc.up);
 
-        //Magic numbers
+        //Magic numbers 
         let intermission = this.config.unit <= 20 ? 3 : 1;
-
-        //More magic numbers
         for (let i = startX; i < endX; i += intermission) {
             if (i === 0)
                 continue;
@@ -212,7 +228,6 @@ class MGraph {
     //Attaches a canvas to the given HTML element at the given z-index
     attachCanvas(el, zIndex) {
         let canvas = document.createElement('canvas');
-        let ctx = canvas.getContext('2d');
         el.appendChild(canvas);
 
         let dimensions = el.getBoundingClientRect();
@@ -220,6 +235,7 @@ class MGraph {
         canvas.height = dimensions.height;
         canvas.width = dimensions.width;
 
+        let ctx = canvas.getContext('2d');
         ctx.translate(canvas.width / 2, canvas.height / 2);
 
         return [canvas, ctx];
