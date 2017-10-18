@@ -8,8 +8,17 @@ class MGraph {
             width: htmlElement.getBoundingClientRect().width,
             height: htmlElement.getBoundingClientRect().height,
 
-            //If these are two are changed, you have to clear drawCtx
-            originCoordinates: { x: 0, y: 0 }, //Defines which coordinates should be the center
+            _originCoordinates: { x: 0, y: 0 }, //Defines which coordinates should be the center
+            get originCoordinates() {
+                return this._originCoordinates;
+            },
+            set originCoordinates(value) {
+                //If origin coordinates change, clear the graph automatically
+                this._originCoordinates = value;
+                this.clear(this.gridCtx);
+                this.clear(this.drawCtx);
+            },
+
             unit: 20, //Width of a single unit in pixels
 
             bgColor: '#FAFAFA', //Background color
@@ -181,7 +190,7 @@ class MGraph {
             if (i === 0)
                 continue;
             if (i < 0)
-                this.drawText(i, i, 0, -5, 15)
+                this.drawText(i, i, 0, -5, 15);
             else
                 this.drawText(i, i, 0, 0, 15);
         }
