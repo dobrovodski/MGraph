@@ -10,11 +10,11 @@ class MGraph {
 
             _originCoordinates: { x: 0, y: 0 }, //Defines which coordinates should be the center
             get originCoordinates() {
-                return _originCoordinates
+                return this._originCoordinates;
             },
             set originCoordinates(value) {
                 //If origin coordinates change, clear the graph automatically
-                _originCoordinates = value;
+                this._originCoordinates = value;
                 this.clear(this.gridCtx);
                 this.clear(this.drawCtx);
             },
@@ -190,7 +190,7 @@ class MGraph {
             if (i === 0)
                 continue;
             if (i < 0)
-                this.drawText(i, i, 0, -5, 15)
+                this.drawText(i, i, 0, -5, 15);
             else
                 this.drawText(i, i, 0, 0, 15);
         }
